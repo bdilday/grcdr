@@ -1,0 +1,33 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# grcdr
+
+This package provides a collection of custom `ggplot2` extensions - `Geom`s, `Stat`s, `Coords`, `Theme`s, etc. The name `grcdr` is a contraction of *Graphs with Code and Data in R* and is a reference to the [*Graphs with Code and Data*](http://graphswithcodeanddata.xyz/) blog. 
+
+## Installation
+
+You can install `grcdr` from github with:
+
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("bdilday/grcdr")
+```
+
+## Example
+
+
+```{r example}
+## basic example code
+```
