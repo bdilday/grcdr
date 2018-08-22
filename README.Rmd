@@ -8,13 +8,16 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "README_files/README-",
+  fig.width=8,
+  fig.height=8,
+  fig.units="in"
 )
 ```
 
 # grcdr
 
-This package provides a collection of custom `ggplot2` extensions - `Geom`s, `Stat`s, `Coords`, `Theme`s, etc. The name `grcdr` is a contraction of *Graphs with Code and Data in R* and is a reference to the [*Graphs with Code and Data*](http://graphswithcodeanddata.xyz/) blog. 
+This package provides a collection of custom `ggplot2` extensions - `Geoms`, `Stats`, `Coords`, `Themes`, etc. The name `grcdr` is a contraction of *Graphs with Code and Data in R* and is a reference to the [*Graphs with Code and Data*](http://graphswithcodeanddata.xyz/) blog, to which this package is loosely related.
 
 ## Installation
 
@@ -25,9 +28,178 @@ You can install `grcdr` from github with:
 devtools::install_github("bdilday/grcdr")
 ```
 
-## Example
+## Examples
 
+The below will use `dplyr` and `ggplot2`
 
-```{r example}
-## basic example code
+```{r load2, message=FALSE}
+library(grcdr)
+## load basics
+library(dplyr)
+library(ggplot2)
+
+## set the theme
+ggplot2::theme_set(theme_minimal(base_size = 14))
 ```
+
+
+## geom_excursion
+
+`geom_excursion` plots running quantities as connected scatter plots. It requires an `x` and `y` aesthetic and also a `t` aesthetic to give the ordering (i.e. "time")
+
+#### MLB runs scored and allowed 
+
+Here's some example data provided with the package that gives team-level stats for 4 MLB teams (Cleveland 1999, New York Yankees 1998, Houston Astros 2017, Milwaukee Brewers 1982). 
+
+``` {r runs1}
+# load some example data from the package
+teams_df = read.csv(system.file("extdata/team_stats.csv", package = "grcdr"),
+                    stringsAsFactors = FALSE)
+teams_df$game_date = as.Date(teams_df$game_date)
+head(teams_df, 2)
+```
+
+We can plot runs scored (`b_r`) on the x-axis and runs allowed (`p_r`) on the y-axis. The time coordinate is the season game number.
+
+``` {r}
+base_plot = teams_df %>% 
+  ggplot() + labs(x="runs scored", y="runs allowed")
+```
+
+By default the data aren't averaged (the run length is 1)
+
+``` {r}
+p = base_plot + 
+  geom_excursion(aes(x=b_r, y=p_r, t=season_game_number)) + 
+  facet_wrap(~k)
+print(p)
+```
+
+The `run_length` parameter controls how many items get summed. The following uses `run_length = 10`
+
+``` {r}
+p = base_plot + 
+  geom_excursion(aes(x=b_r, y=p_r, t=season_game_number), run_length = 10) + 
+  facet_wrap(~k)
+print(p)
+```
+
+##### averages instead of sums
+
+If you give `x_weight` or `y_weight` aesthetics then weighted averages are computed instead of sums. Passing `_weight = 1` therefore results in straight averages.
+
+``` {r}
+p = base_plot + 
+  geom_excursion(aes(x=b_r, y=p_r, t=season_game_number, x_weight=1, y_weight=1), run_length = 10) + 
+  facet_wrap(~k)
+print(p)
+```
+
+##### time ordering
+
+Additionally, the time ordering can be changed
+
+``` {r}
+set.seed(101)
+random_idx = sample(1:nrow(teams_df), nrow(teams_df))
+
+# order by random
+p = teams_df %>% cbind.data.frame(random_idx=random_idx) %>%  
+  ggplot() + labs(x="runs scored", y="runs allowed") + 
+  geom_excursion(aes(x=b_r, y=p_r, t=random_idx, 
+                     x_weight=1, y_weight=1), 
+                 run_length = 10) + 
+  facet_wrap(~k)
+print(p)
+```
+
+
+## stat_run
+
+`stat_run` is a lower-level utility than `geom_excursion`. It can change the `geom` (from `path`) and also can plot running line charts in addition to connected scatterplots.
+
+##### smoothed line charts
+
+Here I set the y aesthetic but not x, which is effectively a line chart.
+
+``` {r}
+p = teams_df %>% ggplot() +
+  stat_run(aes(y=b_r, t=season_game_number)) + 
+  facet_wrap(~k) + labs(x="game number", y="runs scored")
+print(p)
+```
+
+
+However, unlike a traditional line chart, I can average or sum the y variable
+
+``` {r}
+p = teams_df %>% ggplot() +
+  stat_run(aes(y=b_r, t=season_game_number), run_length = 10) + 
+  facet_wrap(~k) + labs(x="game number", y="runs scored")
+print(p)
+```
+
+The default is to generate running totals by using the cumulative sum function and taking differences. A different cumuklative aggregation function can be specified, however. Note that following is for illustration and that the run_fun doesn't correspond to any particularly useful quantity(that I'm aware of, anyway).
+
+``` {r}
+fun_with_cumsum_fun = function(x) {
+  cumsum(x * (x - 1) * sin(x / 5 * pi))
+}
+
+p = teams_df %>% ggplot() +
+  stat_run(aes(y=p_r, t=season_game_number), 
+           run_length = 10,
+           y_run_fun = fun_with_cumsum_fun) + 
+  facet_wrap(~k) + labs(x="game number", y="runs scored")
+print(p)
+```
+
+##### reproducing a geom_excursion
+
+Setting the `x` aesthetic reproduces a `geom_excursion`
+
+``` {r}
+p = teams_df %>% ggplot() +
+  stat_run(aes(x=b_r, y=p_r, t=season_game_number), run_length = 10) + 
+  facet_wrap(~k) + labs(x="runs scored", y="runs allowed")
+print(p)
+```
+
+##### fill missing values
+
+If the time coordinate is missing values, we can fill in the corresponding x and y.
+
+``` {r}
+censored_df = teams_df %>% filter(season_game_number < 40 | season_game_number >60) 
+p = censored_df %>% 
+  ggplot() + 
+  stat_run(aes(y=b_r, t=season_game_number, x=season_game_number)) + facet_wrap(~k)
+print(p)
+
+p = censored_df %>% 
+  ggplot() + 
+  stat_run(aes(y=b_r, t=season_game_number, x=season_game_number), 
+           run_length = 10)  + 
+  facet_wrap(~k)
+print(p)
+
+p = censored_df %>% 
+  ggplot() + 
+  stat_run(aes(y=b_r, t=season_game_number, x=season_game_number), 
+           run_length = 10, y_run_fill_value = 20, x_run_fill_value = 50) + 
+   facet_wrap(~k)
+print(p)
+```
+
+##### other geoms
+
+The `geom_excursion` layer forces a `path` `Geom`, but the lower-level `stat_run` layer can change the `Geom`. For example it can use `polygon` (although unclear what the interpretation is)
+
+``` {r}
+p = teams_df %>% 
+  ggplot() + 
+  stat_run(aes(x=b_r, y=p_r, t=game_date), geom='polygon') + 
+  facet_wrap(~k)
+print(p)
+```
+
