@@ -272,7 +272,7 @@ Use them all
 ``` r
 set.seed(101)
 p = df1 %>% ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
-                       x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+                       x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)) + 
   stat_mds(mds_method = "pca")
 print(p)
 ```
@@ -285,7 +285,7 @@ Use them all and label them
 set.seed(101)
 p = df1 %>% mutate(rn=row_number()) %>% 
   ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
-             x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+             x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)) + 
   stat_mds(mds_method = "pca", geom="text", aes(label=rn))
 print(p)
 ```
@@ -300,7 +300,7 @@ Apply t-SNE. This requires the `Rtsne` package.
 set.seed(101)
 p = df1 %>% mutate(rn=row_number()) %>% 
   ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
-             x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+             x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)) + 
   stat_mds(mds_method = "tsne", geom="text", aes(label=rn))
 print(p)
 #> Loading required package: Rtsne
