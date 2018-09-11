@@ -234,3 +234,76 @@ print(p)
 ```
 
 ![](README_files/README-unnamed-chunk-12-1.png)
+
+StatMDS
+-------
+
+This stat applies dimensionality reduction using multi-dimensional scaling. As of this writing the available algorithms are principle components analysis (`pca`) or t-distributed stohcastic neighbor embedding (`tsne`). The variables to use in the dimensionality reduction are passed in the aesthetics `x#` where `#` is an arbitrary integer. The default `geom` is `GeomPoint`.
+
+#### example data
+
+``` r
+set.seed(101)
+df1 = data.frame(x1 = rnorm(100))
+for (i in 2:10) {
+  k = sprintf("x%d", i)
+  df1[,k] = rnorm(100)
+}
+
+# now, for the last 25 add a constant to create two well separated groups
+df1[75:100, ] = df1[75:100,] + 2
+```
+
+#### pca
+
+Use only 2 variables
+
+``` r
+set.seed(101)
+p = df1 %>% ggplot(aes(x1=x1, x2=x2)) + 
+  stat_mds(mds_method = "pca")
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-14-1.png)
+
+Use them all
+
+``` r
+set.seed(101)
+p = df1 %>% ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
+                       x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+  stat_mds(mds_method = "pca")
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-15-1.png)
+
+Use them all and label them
+
+``` r
+set.seed(101)
+p = df1 %>% mutate(rn=row_number()) %>% 
+  ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
+             x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+  stat_mds(mds_method = "pca", geom="text", aes(label=rn))
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-16-1.png)
+
+#### tsne
+
+Apply t-SNE. This requires the `Rtsne` package.
+
+``` r
+set.seed(101)
+p = df1 %>% mutate(rn=row_number()) %>% 
+  ggplot(aes(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, 
+             x6=x6, x7=x7, x8x=8, x9=x9, x10=x10)) + 
+  stat_mds(mds_method = "tsne", geom="text", aes(label=rn))
+print(p)
+#> Loading required package: Rtsne
+```
+
+![](README_files/README-unnamed-chunk-17-1.png)
