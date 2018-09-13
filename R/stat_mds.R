@@ -49,7 +49,7 @@ StatMDS = ggproto(
     data
   },
 
-  compute_group = function(data, scales,
+  compute_panel = function(data, scales,
                            mds_method = NULL,
                            tsne_perplexity = NULL) {
     fit_columns = grep("x[0-9]+", names(data), value=TRUE)
