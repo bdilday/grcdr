@@ -238,7 +238,7 @@ print(p)
 StatMDS
 -------
 
-This stat applies dimensionality reduction using multi-dimensional scaling. As of this writing the available algorithms are principle components analysis (`pca`) or t-distributed stohcastic neighbor embedding (`tsne`). The variables to use in the dimensionality reduction are passed in the aesthetics `x#` where `#` is an arbitrary integer. The default `geom` is `GeomPoint`.
+This stat applies dimensionality reduction using multi-dimensional scaling. As of this writing the available algorithms are principal components analysis (`pca`) or t-distributed stohcastic neighbor embedding (`tsne`). The variables to use in the dimensionality reduction are passed in the aesthetics `x#` where `#` is an arbitrary integer. The default `geom` is `GeomPoint`.
 
 #### example data
 
@@ -307,3 +307,55 @@ print(p)
 ```
 
 ![](README_files/README-unnamed-chunk-17-1.png)
+
+GeomTailScatter
+---------------
+
+This geom implements a tail scatter plot. It is inspired by the [xenographics project](https://xeno.graphics/). The `x` and `y` aesthetics are points in a two-d plane. Subsequent variables are passed in aesthetics named `x#` where x is an arbitrary integer. They do not need to start at `1`, however, the order will be interpreted lexigraphically. The `x#` variables are mapped to lines extending at an angle of `-(15 + 30 * i)` degrees. This means that variables trying to use 12 or more variables in additon to `x` and `y` is not supported at this time and will result in lines that overlap.
+
+### geom\_tailscatter example
+
+Some simulated data
+
+``` r
+set.seed(101)
+df1 = data.frame(x1 = rnorm(100), x2 = rnorm(100))
+df1$x3 = with(df1, x1**2 + abs(x2))
+df1$x4 = 100 * df1$x1 ** 2
+
+# make a categorical var
+df1$g = factor(sample(c(0,1), 100, replace = TRUE))
+```
+
+Plot with `geom_tailscatter`
+
+``` r
+p = df1 %>% 
+  ggplot(aes(x=x1, y=x2, x3=x3, x4=x4)) + 
+  geom_tailscatter(size=2)
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-19-1.png)
+
+The parameter `tail_scale` controls the length of the tail lines
+
+``` r
+p = df1 %>% 
+  ggplot(aes(x=x1, y=x2, x3=x3, x4=x4)) + 
+  geom_tailscatter(size=2, tail_scale = 0.5)
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-20-1.png)
+
+Color by group
+
+``` r
+p = df1 %>% 
+  ggplot(aes(x=x1, y=x2, x3=x3, x4=x4, color=g)) + 
+  geom_tailscatter(size=2)
+print(p)
+```
+
+![](README_files/README-unnamed-chunk-21-1.png)
