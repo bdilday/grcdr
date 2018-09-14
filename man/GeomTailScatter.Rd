@@ -4,7 +4,7 @@
 \name{GeomTailScatter}
 \alias{GeomTailScatter}
 \title{Create a tail scatter plot}
-\format{An object of class \code{StatTailScatter} (inherits from \code{Geom}, \code{ggproto}, \code{gg}) of length 4.}
+\format{An object of class \code{StatTailScatter} (inherits from \code{Geom}, \code{ggproto}, \code{gg}) of length 5.}
 \usage{
 GeomTailScatter
 }

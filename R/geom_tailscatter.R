@@ -33,6 +33,8 @@
 #'   rather than combining with them. This is most useful for helper functions
 #'   that define both data and aesthetics and shouldn't inherit behavior from
 #'   the default plot specification, e.g. \code{\link{borders}}.
+#' @param tail_scale The maximum length of the tails, in units of the coordinate frame,
+#' i.e. 1 corresponds to the whole frame
 #' @export
 #' @examples
 #' set.seed(101)
@@ -42,12 +44,27 @@
 
 GeomTailScatter <- ggproto("StatTailScatter", Geom,
                    required_aes = c("x", "y"),
+                   extra_params = c("na.rm", "tail_scale"),
+
                    default_aes = list(
                      shape = 19,
                      colour = "black",
-                     size = 1),
+                     size = 1.5,
+                     fill = NA,
+                     alpha = NA,
+                     stroke = 0.5),
 
-                   draw_group = function(data, panel_params, coord, ...) {
+                   draw_group = function(data, panel_params, coord,
+                                         tail_scale, ...) {
+
+                     if (tail_scale>1) {
+                       warning("tail_scale values gt 1 will extend past the limits of the panel")
+                     }
+
+                     if (tail_scale <= 0) {
+                      stop("tail_scale must be greater than 0")
+                     }
+
                      coords = coord$transform(data, panel_params)
                      fit_columns = grep("x[0-9]+", names(data), value = TRUE)
 
@@ -55,27 +72,25 @@ GeomTailScatter <- ggproto("StatTailScatter", Geom,
                        grid::pointsGrob(
                          coords$x, coords$y,
                          pch = coords$shape,
-                         gp = grid::gpar(col = coords$colour)
+                         gp = grid::gpar(
+                           col = alpha(coords$colour, coords$alpha),
+                           fill = alpha(coords$fill, coords$alpha),
+                           # Stroke is added around the outside of the point
+                           fontsize = coords$size * .pt + coords$stroke * .stroke / 2,
+                           lwd = coords$stroke * .stroke / 2
+                         )
                        ))
 
                      ll = lapply(1:length(fit_columns), function(i) {
                        s = fit_columns[i]
-                       MAXR = 0.1
-                       print(max(coords[,s]))
-                       print(min(coords[,s]))
+                       MAXR = tail_scale
                        B = 1 / (max(coords[,s]) - min(coords[,s]))
-                       A = 1 - B * min(coords[,s])
+                       A = - B * min(coords[,s])
 
                        xx = A + B * coords[,s]
-                       print(min(xx))
-                       print(max(xx))
                        dx = MAXR * xx * cos(-(15 + 30 * i) * pi /180)
                        dy = MAXR * xx * sin(-(15 + 30 * i) * pi /180)
-                       print(min(dx))
-                       print(max(dx))
-                       print(min(dy))
-                       print(max(dy))
-                     g = grid::segmentsGrob(x0 = coords$x, y0 = coords$y,
+                       g = grid::segmentsGrob(x0 = coords$x, y0 = coords$y,
                                             x1 = coords$x + dx, y1 = coords$y + dy,
                                             gp = grid::gpar(col = coords$colour))
                      })
