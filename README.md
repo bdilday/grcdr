@@ -153,7 +153,7 @@ print(p)
 
 ![](README_files/README-unnamed-chunk-8-1.png)
 
-The default is to generate running totals by using the cumulative sum function and taking differences. A different cumuklative aggregation function can be specified, however. Note that following is for illustration and that the run\_fun doesn't correspond to any particularly useful quantity(that I'm aware of, anyway).
+The default is to generate running totals by using the cumulative sum function and taking differences. A different cumulative aggregation function can be specified, however. Note that following is for illustration and that the run\_fun doesn't correspond to any particularly useful quantity(that I'm aware of, anyway).
 
 ``` r
 fun_with_cumsum_fun = function(x) {
@@ -238,7 +238,7 @@ print(p)
 StatMDS
 -------
 
-This stat applies dimensionality reduction using multi-dimensional scaling. As of this writing the available algorithms are principal components analysis (`pca`) or t-distributed stohcastic neighbor embedding (`tsne`). The variables to use in the dimensionality reduction are passed in the aesthetics `x#` where `#` is an arbitrary integer. The default `geom` is `GeomPoint`.
+This stat applies dimensionality reduction using multi-dimensional scaling. As of this writing the available algorithms are principal components analysis (`pca`) or t-distributed stochastic neighbor embedding (`tsne`). The variables to use in the dimensionality reduction are passed in the aesthetics `x#` where `#` is an arbitrary integer. The default `geom` is `GeomPoint`.
 
 #### example data
 
@@ -311,7 +311,7 @@ print(p)
 GeomTailScatter
 ---------------
 
-This geom implements a tail scatter plot. It is inspired by the [xenographics project](https://xeno.graphics/). The `x` and `y` aesthetics are points in a two-d plane. Subsequent variables are passed in aesthetics named `x#` where x is an arbitrary integer. They do not need to start at `1`, however, the order will be interpreted lexigraphically. The `x#` variables are mapped to lines extending at an angle of `-(15 + 30 * i)` degrees. This means that variables trying to use 12 or more variables in additon to `x` and `y` is not supported at this time and will result in lines that overlap.
+This geom implements a tail scatter plot. It is inspired by the [xenographics project](https://xeno.graphics/). The `x` and `y` aesthetics are points in a two-d plane. Subsequent variables are passed in aesthetics named `x#` where x is an arbitrary integer. They do not need to start at `1`, however, the order will be interpreted lexigraphically. The `x#` variables are mapped to lines extending at an angle of `-(15 + 30 * i)` degrees. This means that variables trying to use 12 or more variables in addition to `x` and `y` is not supported at this time and will result in lines that overlap.
 
 ### geom\_tailscatter example
 
@@ -359,3 +359,32 @@ print(p)
 ```
 
 ![](README_files/README-unnamed-chunk-21-1.png)
+
+tsne\_linked
+------------
+
+`tsne_linked` is an `htmlwidget`. It takes a data set, projects it into 2-dimensions using the `t-SNE` algorithm, and then plots a 2-d scatter plot. The points in the scatter plot are linked to a bar graph that shows the values of the coordinates that went into the `t-SNE` calculation. The scatter plot uses a Voronoi tessellation to make the mouse-over highlighting smoother.
+
+### example
+
+simulated data
+
+``` r
+set.seed(101)
+df1 = data.frame(x1 = rnorm(100), x2 = rnorm(100))
+df1$x3 = rnorm(100)
+df1$x4 = rnorm(100)
+df1$id = row.names(df1)
+
+df1$g = ifelse(df1$x1 > 0, 1, 0)
+tsne_coords = c("x1", "x2", "x3", "x4")
+```
+
+``` r
+tsne_linked(df1, 
+            tsne_coords = tsne_coords, 
+            label_var = "id", 
+            group_var = "g")
+```
+
+![](README_files/tsne_linked1.gif)

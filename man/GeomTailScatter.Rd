@@ -45,6 +45,9 @@ a warning. If \code{TRUE}, missing values are silently removed.}
 rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behavior from
 the default plot specification, e.g. \code{\link{borders}}.}
+
+\item{tail_scale}{The maximum length of the tails, in units of the coordinate frame,
+i.e. 1 corresponds to the whole frame}
 }
 \description{
 Create a tail scatter plot
